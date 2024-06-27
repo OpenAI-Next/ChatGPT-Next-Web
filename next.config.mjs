@@ -73,6 +73,18 @@ if (mode !== "export") {
         source: "/api/proxy/google/:path*",
         destination: "https://generativelanguage.googleapis.com/:path*",
       },
+      // {
+      //   source: "/api/proxy/bytedance/:path*",
+      //   destination: "https://ark.cn-beijing.volces.com/:path*",
+      // },
+      {
+        source: "/api/v3/chat/completions",
+        destination: "https://ark.cn-beijing.volces.com/api/v3/chat/completions",
+      },
+      {
+        source: "/api/v1/services/aigc/text-generation/generation",
+        destination: "https://dashscope.aliyuncs.com/api/v1/services/aigc/text-generation/generation",
+      },
       {
         source: "/api/proxy/openai/:path*",
         destination: "https://api.openai.com/:path*",

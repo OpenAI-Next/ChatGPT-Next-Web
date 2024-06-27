@@ -355,6 +355,35 @@ const en: LocaleType = {
           SubTitle: "Select a specific API version",
         },
       },
+      Bytedance: {
+        ApiKey: {
+          Title: "API Key",
+          SubTitle: "Obtain your API Key from Bytedance",
+          Placeholder: "Enter your Bytedance API Key",
+        },
+
+        Endpoint: {
+          Title: "Endpoint Address",
+          SubTitle: "Example:",
+        },
+
+        ApiVersion: {
+          Title: "Model access point",
+          SubTitle: "Model access point name starting with ep",
+        },
+      },
+      Alibaba: {
+        ApiKey: {
+          Title: "API Key",
+          SubTitle: "Obtain your API Key from Alibaba",
+          Placeholder: "Enter your Alibaba API Key",
+        },
+
+        Endpoint: {
+          Title: "Endpoint Address",
+          SubTitle: "Example:",
+        },
+      },
     },
 
     Model: "Model",

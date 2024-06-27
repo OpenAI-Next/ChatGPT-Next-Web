@@ -1124,6 +1124,114 @@ export function Settings() {
                       </ListItem>
                     </>
                   )}
+                  {accessStore.provider === ServiceProvider.Bytedance && (
+                    <>
+                      <ListItem
+                        title={Locale.Settings.Access.Bytedance.Endpoint.Title}
+                        subTitle={
+                          Locale.Settings.Access.Bytedance.Endpoint.SubTitle +
+                          Google.ExampleEndpoint
+                        }
+                      >
+                        <input
+                          type="text"
+                          value={accessStore.bytedanceUrl}
+                          placeholder={Google.ExampleEndpoint}
+                          onChange={(e) =>
+                            accessStore.update(
+                              (access) =>
+                                (access.bytedanceUrl = e.currentTarget.value),
+                            )
+                          }
+                        ></input>
+                      </ListItem>
+                      <ListItem
+                        title={Locale.Settings.Access.Bytedance.ApiKey.Title}
+                        subTitle={
+                          Locale.Settings.Access.Bytedance.ApiKey.SubTitle
+                        }
+                      >
+                        <PasswordInput
+                          value={accessStore.bytedanceApiKey}
+                          type="text"
+                          placeholder={
+                            Locale.Settings.Access.Bytedance.ApiKey.Placeholder
+                          }
+                          onChange={(e) => {
+                            accessStore.update(
+                              (access) =>
+                                (access.bytedanceApiKey =
+                                  e.currentTarget.value),
+                            );
+                          }}
+                        />
+                      </ListItem>
+                      <ListItem
+                        title={
+                          Locale.Settings.Access.Bytedance.ApiVersion.Title
+                        }
+                        subTitle={
+                          Locale.Settings.Access.Bytedance.ApiVersion.SubTitle
+                        }
+                      >
+                        <input
+                          type="text"
+                          value={accessStore.bytedanceApiVersion}
+                          placeholder="2023-08-01-preview"
+                          onChange={(e) =>
+                            accessStore.update(
+                              (access) =>
+                                (access.bytedanceApiVersion =
+                                  e.currentTarget.value),
+                            )
+                          }
+                        ></input>
+                      </ListItem>
+                    </>
+                  )}
+                  {accessStore.provider === ServiceProvider.Alibaba && (
+                    <>
+                      <ListItem
+                        title={Locale.Settings.Access.Alibaba.Endpoint.Title}
+                        subTitle={
+                          Locale.Settings.Access.Alibaba.Endpoint.SubTitle +
+                          Google.ExampleEndpoint
+                        }
+                      >
+                        <input
+                          type="text"
+                          value={accessStore.alibabaUrl}
+                          placeholder={Google.ExampleEndpoint}
+                          onChange={(e) =>
+                            accessStore.update(
+                              (access) =>
+                                (access.alibabaUrl = e.currentTarget.value),
+                            )
+                          }
+                        ></input>
+                      </ListItem>
+                      <ListItem
+                        title={Locale.Settings.Access.Alibaba.ApiKey.Title}
+                        subTitle={
+                          Locale.Settings.Access.Alibaba.ApiKey.SubTitle
+                        }
+                      >
+                        <PasswordInput
+                          value={accessStore.alibabaApiKey}
+                          type="text"
+                          placeholder={
+                            Locale.Settings.Access.Alibaba.ApiKey.Placeholder
+                          }
+                          onChange={(e) => {
+                            accessStore.update(
+                              (access) =>
+                                (access.alibabaApiKey = e.currentTarget.value),
+                            );
+                          }}
+                        />
+                      </ListItem>
+                    </>
+                  )}
                   {accessStore.provider === ServiceProvider.Anthropic && (
                     <>
                       <ListItem

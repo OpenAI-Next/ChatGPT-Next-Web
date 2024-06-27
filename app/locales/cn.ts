@@ -347,6 +347,35 @@ const cn = {
           SubTitle: "选择一个特定的 API 版本",
         },
       },
+      Bytedance: {
+        ApiKey: {
+          Title: "API 密钥",
+          SubTitle: "从 火山引擎 获取您的 API 密钥",
+          Placeholder: "输入您的 火山引擎 API 密钥",
+        },
+
+        Endpoint: {
+          Title: "终端地址",
+          SubTitle: "示例：",
+        },
+
+        ApiVersion: {
+          Title: "模型接入点",
+          SubTitle: "ep开头的模型接入点名称",
+        },
+      },
+      Alibaba: {
+        ApiKey: {
+          Title: "API 密钥",
+          SubTitle: "从  获取您的 API 密钥",
+          Placeholder: "输入您的 阿里巴巴 API 密钥",
+        },
+
+        Endpoint: {
+          Title: "终端地址",
+          SubTitle: "示例：",
+        },
+      },
       CustomModel: {
         Title: "自定义模型名",
         SubTitle: "增加自定义模型可选项，使用英文逗号隔开",

@@ -91,7 +91,6 @@ export class ChatGPTApi implements LLMApi {
     if (!baseUrl.startsWith("http") && !baseUrl.startsWith(ApiPath.OpenAI)) {
       baseUrl = "https://" + baseUrl;
     }
-
     console.log("[Proxy Endpoint] ", baseUrl, path);
 
     return [baseUrl, path].join("/");

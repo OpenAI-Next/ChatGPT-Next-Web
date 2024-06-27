@@ -32,6 +32,14 @@ declare global {
       GOOGLE_API_KEY?: string;
       GOOGLE_URL?: string;
 
+      // bytedance only
+      BYTEDANCE_API_KEY?: string;
+      BYTEDANCE_URL?: string;
+
+      // alibaba only
+      ALIBABA_API_KEY?: string;
+      ALIBABA_URL?: string;
+
       // google tag manager
       GTM_ID?: string;
 
@@ -92,6 +100,8 @@ export const getServerSideConfig = () => {
   const isAzure = !!process.env.AZURE_URL;
   const isGoogle = !!process.env.GOOGLE_API_KEY;
   const isAnthropic = !!process.env.ANTHROPIC_API_KEY;
+  const isBytedance = !!process.env.BYTEDANCE_API_KEY;
+  const isAlibaba = !!process.env.ALIBABA_API_KEY;
 
   // const apiKeyEnvVar = process.env.OPENAI_API_KEY ?? "";
   // const apiKeys = apiKeyEnvVar.split(",").map((v) => v.trim());
@@ -118,6 +128,14 @@ export const getServerSideConfig = () => {
     isGoogle,
     googleApiKey: getApiKey(process.env.GOOGLE_API_KEY),
     googleUrl: process.env.GOOGLE_URL,
+
+    isBytedance,
+    bytedanceApiKey: getApiKey(process.env.BYTEDANCE_API_KEY),
+    bytedanceUrl: process.env.BYTEDANCE_URL,
+
+    isAlibaba,
+    alibabaApiKey: getApiKey(process.env.ALIBABA_API_KEY),
+    alibabaUrl: process.env.ALIBABA_URL,
 
     isAnthropic,
     anthropicApiKey: getApiKey(process.env.ANTHROPIC_API_KEY),

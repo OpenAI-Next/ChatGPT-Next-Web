@@ -14,6 +14,10 @@ export const ANTHROPIC_BASE_URL = "https://api.anthropic.com";
 
 export const GEMINI_BASE_URL = "https://generativelanguage.googleapis.com/";
 
+export const DOUBAO_BASE_URL = "https://ark.cn-beijing.volces.com/";
+
+export const QWEN_BASE_URL = "https://dashscope.aliyuncs.com/api/";
+
 export enum Path {
   Home = "/",
   Chat = "/chat",
@@ -70,12 +74,16 @@ export enum ServiceProvider {
   Azure = "Azure",
   Google = "Google",
   Anthropic = "Anthropic",
+  Bytedance = "Bytedance",
+  Alibaba = "Alibaba",
 }
 
 export enum ModelProvider {
   GPT = "GPT",
   GeminiPro = "GeminiPro",
   Claude = "Claude",
+  Doubao = "Doubao",
+  Qwen = "Qwen",
 }
 
 export const Anthropic = {
@@ -92,12 +100,36 @@ export const OpenaiPath = {
   ListModelPath: "v1/models",
 };
 
+export const BytedancePath = {
+  ChatPath: "api/v3/chat/completions",
+  UsagePath: "dashboard/billing/usage",
+  SubsPath: "dashboard/billing/subscription",
+  ListModelPath: "v1/models",
+};
+
+export const AlibabaPath = {
+  ChatPath: "api/v1/services/aigc/text-generation/generation",
+  UsagePath: "dashboard/billing/usage",
+  SubsPath: "dashboard/billing/subscription",
+  ListModelPath: "v1/models",
+};
+
 export const Azure = {
   ExampleEndpoint: "https://{resource-url}/openai/deployments/{deploy-id}",
 };
 
 export const Google = {
   ExampleEndpoint: "https://generativelanguage.googleapis.com/",
+  ChatPath: (modelName: string) => `v1beta/models/${modelName}:generateContent`,
+};
+
+export const Bytedance = {
+  ExampleEndpoint: "https://ark.cn-beijing.volces.com/",
+  ChatPath: (modelName: string) => `v1beta/models/${modelName}:generateContent`,
+};
+
+export const Alibaba = {
+  ExampleEndpoint: "https://dashscope.aliyuncs.com/",
   ChatPath: (modelName: string) => `v1beta/models/${modelName}:generateContent`,
 };
 
@@ -159,6 +191,18 @@ const googleModels = [
   "gemini-pro-vision",
 ];
 
+const bytedanceModels = ["doubao-lite-128k"];
+
+const alibabaModels = [
+  "qwen-turbo",
+  "qwen-plus",
+  "qwen-max",
+  "qwen-max-0428",
+  "qwen-max-0403",
+  "qwen-max-0107",
+  "qwen-max-longcontext",
+];
+
 const anthropicModels = [
   "claude-instant-1.2",
   "claude-2.0",
@@ -194,6 +238,24 @@ export const DEFAULT_MODELS = [
       id: "anthropic",
       providerName: "Anthropic",
       providerType: "anthropic",
+    },
+  })),
+  ...bytedanceModels.map((name) => ({
+    name,
+    available: true,
+    provider: {
+      id: "bytedance",
+      providerName: "Bytedance",
+      providerType: "bytedance",
+    },
+  })),
+  ...alibabaModels.map((name) => ({
+    name,
+    available: true,
+    provider: {
+      id: "alibaba",
+      providerName: "Alibaba",
+      providerType: "alibaba",
     },
   })),
 ] as const;

@@ -1,14 +1,15 @@
 import { getClientConfig } from "../config/client";
 import {
   ACCESS_CODE_PREFIX,
-  Azure,
   ModelProvider,
   ServiceProvider,
 } from "../constant";
 import { ChatMessage, ModelType, useAccessStore, useChatStore } from "../store";
 import { ChatGPTApi } from "./platforms/openai";
 import { GeminiProApi } from "./platforms/google";
+import { DoubaoApi } from "./platforms/bytedance";
 import { ClaudeApi } from "./platforms/anthropic";
+import { QwenApi } from "./platforms/alibaba";
 export const ROLES = ["system", "user", "assistant"] as const;
 export type MessageRole = (typeof ROLES)[number];
 
@@ -70,7 +71,7 @@ export abstract class LLMApi {
   abstract models(): Promise<LLMModel[]>;
 }
 
-type ProviderName = "openai" | "azure" | "claude" | "palm";
+type ProviderName = "openai" | "azure" | "claude" | "palm" | "doubao" | "qwen";
 
 interface Model {
   name: string;
@@ -98,6 +99,12 @@ export class ClientApi {
     switch (provider) {
       case ModelProvider.GeminiPro:
         this.llm = new GeminiProApi();
+        break;
+      case ModelProvider.Doubao:
+        this.llm = new DoubaoApi();
+        break;
+      case ModelProvider.Qwen:
+        this.llm = new QwenApi();
         break;
       case ModelProvider.Claude:
         this.llm = new ClaudeApi();
@@ -161,10 +168,16 @@ export function getHeaders() {
   };
   const modelConfig = useChatStore.getState().currentSession().mask.modelConfig;
   const isGoogle = modelConfig.model.startsWith("gemini");
+  const isBytedance = modelConfig.model.startsWith("doubao");
+  const isAlibaba = modelConfig.model.startsWith("qwen");
   const isAzure = accessStore.provider === ServiceProvider.Azure;
   const authHeader = isAzure ? "api-key" : "Authorization";
   const apiKey = isGoogle
     ? accessStore.googleApiKey
+    : isBytedance
+    ? accessStore.bytedanceApiKey
+    : isAlibaba
+    ? accessStore.alibabaApiKey
     : isAzure
     ? accessStore.azureApiKey
     : accessStore.openaiApiKey;
