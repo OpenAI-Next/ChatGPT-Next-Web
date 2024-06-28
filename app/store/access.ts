@@ -47,6 +47,11 @@ const DEFAULT_ACCESS_STATE = {
   alibabaApiKey: "",
   alibabaApiVersion: "v1",
 
+  // baidu ai studio
+  baiduUrl: "",
+  baiduApiKey: "",
+  baiduApiVersion: "v1",
+
   // anthropic
   anthropicApiKey: "",
   anthropicApiVersion: "2023-06-01",
@@ -92,6 +97,10 @@ export const useAccessStore = createPersistStore(
       return ensure(get(), ["alibabaApiKey"]);
     },
 
+    isValidBaidu() {
+      return ensure(get(), ["baiduApiKey"]);
+    },
+
     isValidAnthropic() {
       return ensure(get(), ["anthropicApiKey"]);
     },
@@ -106,6 +115,7 @@ export const useAccessStore = createPersistStore(
         this.isValidGoogle() ||
         this.isValidBytedance() ||
         this.isValidAlibaba() ||
+        this.isValidBaidu() ||
         this.isValidAnthropic() ||
         !this.enabledAccessControl() ||
         (this.enabledAccessControl() && ensure(get(), ["accessCode"]))
@@ -153,6 +163,7 @@ export const useAccessStore = createPersistStore(
           googleApiKey: string;
           bytedanceApiKey: string;
           alibabaApiKey: string;
+          baiduApiKey: string;
         };
         state.openaiApiKey = state.token;
         state.azureApiVersion = "2023-08-01-preview";

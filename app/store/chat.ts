@@ -372,6 +372,8 @@ export const useChatStore = createPersistStore(
           api = new ClientApi(ModelProvider.Doubao);
         } else if (modelConfig.model.startsWith("qwen")) {
           api = new ClientApi(ModelProvider.Qwen);
+        } else if (modelConfig.model.startsWith("ERNIE")) {
+          api = new ClientApi(ModelProvider.Ernie);
         } else {
           api = new ClientApi(ModelProvider.GPT);
         }

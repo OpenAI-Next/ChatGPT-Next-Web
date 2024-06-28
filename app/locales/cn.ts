@@ -376,6 +376,23 @@ const cn = {
           SubTitle: "示例：",
         },
       },
+      Baidu: {
+        ApiKey: {
+          Title: "Access Key",
+          SubTitle: "从 千帆 获取您的 Access Key",
+          Placeholder: "输入您的 千帆 Access Key",
+        },
+
+        Endpoint: {
+          Title: "终端地址",
+          SubTitle: "示例：",
+        },
+
+        ApiVersion: {
+          Title: "Secret Key",
+          SubTitle: "从 千帆 获取您的 Secret Key",
+        },
+      },
       CustomModel: {
         Title: "自定义模型名",
         SubTitle: "增加自定义模型可选项，使用英文逗号隔开",

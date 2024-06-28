@@ -1,12 +1,12 @@
-import { Bytedance, REQUEST_TIMEOUT_MS } from "@/app/constant";
+import { Baidu, REQUEST_TIMEOUT_MS } from "@/app/constant";
 import { ChatOptions, getHeaders, LLMApi, LLMModel, LLMUsage } from "../api";
 import { useAccessStore, useAppConfig, useChatStore } from "@/app/store";
 import { getClientConfig } from "@/app/config/client";
 import { DEFAULT_API_HOST } from "@/app/constant";
 
-export class DoubaoApi implements LLMApi {
+export class ErnieApi implements LLMApi {
   extractMessage(res: any) {
-    console.log("[Response] doubao response: ", res);
+    console.log("[Response] ernie response: ", res);
 
     return (
       res?.candidates?.at(0)?.content?.parts.at(0)?.text ||
@@ -17,7 +17,7 @@ export class DoubaoApi implements LLMApi {
   async chat(options: ChatOptions): Promise<void> {
     const messages = options.messages.map((v) => {
       return {
-        role: v.role.replace("assistant", "assistant"),
+        role: v.role,
         content: v.content,
       };
     });
@@ -34,13 +34,12 @@ export class DoubaoApi implements LLMApi {
     const requestPayload = {
       messages,
       stream: true,
-      model: accessStore.bytedanceEndpointId,
     };
 
     let baseUrl = "";
 
     if (accessStore.useCustomConfig) {
-      baseUrl = accessStore.bytedanceUrl;
+      baseUrl = accessStore.baiduUrl;
     }
 
     const isApp = !!getClientConfig()?.isApp;
@@ -52,18 +51,19 @@ export class DoubaoApi implements LLMApi {
       if (!baseUrl) {
         baseUrl = isApp
           ? DEFAULT_API_HOST +
-            "/api/proxy/bytedance/" +
-            Bytedance.ChatPath(modelConfig.model)
-          : this.path(Bytedance.ChatPath(modelConfig.model));
+            "/api/proxy/baidu/" +
+            Baidu.ChatPath(modelConfig.model)
+          : this.path(Baidu.ChatPath(modelConfig.model));
       }
 
       if (isApp) {
-        baseUrl += `?key=${accessStore.bytedanceApiKey}`;
+        baseUrl += `?key=${accessStore.baiduApiKey}`;
       }
       const chatPayload = {
         method: "POST",
         body: JSON.stringify(requestPayload),
         signal: controller.signal,
+        // TODO
         headers: getHeaders(),
       };
 
@@ -200,7 +200,7 @@ export class DoubaoApi implements LLMApi {
     return [];
   }
   path(path: string): string {
-    return "/api/bytedance/" + path;
+    return "/api/baidu/" + path;
   }
 }
 

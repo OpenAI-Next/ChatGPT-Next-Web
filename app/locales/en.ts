@@ -384,6 +384,23 @@ const en: LocaleType = {
           SubTitle: "Example:",
         },
       },
+      Baidu: {
+        ApiKey: {
+          Title: "Access Key",
+          SubTitle: "Obtain your Access Key from Qianfan",
+          Placeholder: "Enter your Qianfan Access Key",
+        },
+
+        Endpoint: {
+          Title: "终端地址",
+          SubTitle: "示例：",
+        },
+
+        ApiVersion: {
+          Title: "Secret Key",
+          SubTitle: "Obtain your Secret Key from Qianfan",
+        },
+      },
     },
 
     Model: "Model",

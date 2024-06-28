@@ -10,6 +10,7 @@ import { GeminiProApi } from "./platforms/google";
 import { DoubaoApi } from "./platforms/bytedance";
 import { ClaudeApi } from "./platforms/anthropic";
 import { QwenApi } from "./platforms/alibaba";
+import { ErnieApi } from "./platforms/baidu";
 export const ROLES = ["system", "user", "assistant"] as const;
 export type MessageRole = (typeof ROLES)[number];
 
@@ -71,7 +72,14 @@ export abstract class LLMApi {
   abstract models(): Promise<LLMModel[]>;
 }
 
-type ProviderName = "openai" | "azure" | "claude" | "palm" | "doubao" | "qwen";
+type ProviderName =
+  | "openai"
+  | "azure"
+  | "claude"
+  | "palm"
+  | "doubao"
+  | "qwen"
+  | "ernie";
 
 interface Model {
   name: string;
@@ -105,6 +113,9 @@ export class ClientApi {
         break;
       case ModelProvider.Qwen:
         this.llm = new QwenApi();
+        break;
+      case ModelProvider.Ernie:
+        this.llm = new ErnieApi();
         break;
       case ModelProvider.Claude:
         this.llm = new ClaudeApi();
@@ -170,6 +181,7 @@ export function getHeaders() {
   const isGoogle = modelConfig.model.startsWith("gemini");
   const isBytedance = modelConfig.model.startsWith("doubao");
   const isAlibaba = modelConfig.model.startsWith("qwen");
+  const isBaidu = modelConfig.model.startsWith("ERNIE");
   const isAzure = accessStore.provider === ServiceProvider.Azure;
   const authHeader = isAzure ? "api-key" : "Authorization";
   const apiKey = isGoogle
@@ -178,6 +190,8 @@ export function getHeaders() {
     ? accessStore.bytedanceApiKey
     : isAlibaba
     ? accessStore.alibabaApiKey
+    : isBaidu
+    ? accessStore.baiduApiKey
     : isAzure
     ? accessStore.azureApiKey
     : accessStore.openaiApiKey;
@@ -199,6 +213,13 @@ export function getHeaders() {
       );
     }
   }
+
+  // TODO baidu  https://cloud.baidu.com/doc/WENXINWORKSHOP/s/Dlkm79mnx#%E5%9F%BA%E4%BA%8E%E5%AE%89%E5%85%A8%E8%AE%A4%E8%AF%81aksk%E7%AD%BE%E5%90%8D%E8%AE%A1%E7%AE%97%E8%AE%A4%E8%AF%81
+  if (isBaidu) {
+    headers[authHeader] = "";
+  }
+
+  // TODO 腾讯
 
   return headers;
 }

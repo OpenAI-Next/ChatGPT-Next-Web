@@ -1189,6 +1189,66 @@ export function Settings() {
                       </ListItem>
                     </>
                   )}
+                  {accessStore.provider === ServiceProvider.Baidu && (
+                    <>
+                      <ListItem
+                        title={Locale.Settings.Access.Baidu.Endpoint.Title}
+                        subTitle={
+                          Locale.Settings.Access.Baidu.Endpoint.SubTitle +
+                          Google.ExampleEndpoint
+                        }
+                      >
+                        <input
+                          type="text"
+                          value={accessStore.baiduUrl}
+                          placeholder={Google.ExampleEndpoint}
+                          onChange={(e) =>
+                            accessStore.update(
+                              (access) =>
+                                (access.baiduUrl = e.currentTarget.value),
+                            )
+                          }
+                        ></input>
+                      </ListItem>
+                      <ListItem
+                        title={Locale.Settings.Access.Baidu.ApiKey.Title}
+                        subTitle={Locale.Settings.Access.Baidu.ApiKey.SubTitle}
+                      >
+                        <PasswordInput
+                          value={accessStore.baiduApiKey}
+                          type="text"
+                          placeholder={
+                            Locale.Settings.Access.Baidu.ApiKey.Placeholder
+                          }
+                          onChange={(e) => {
+                            accessStore.update(
+                              (access) =>
+                                (access.baiduApiKey = e.currentTarget.value),
+                            );
+                          }}
+                        />
+                      </ListItem>
+                      <ListItem
+                        title={Locale.Settings.Access.Baidu.ApiVersion.Title}
+                        subTitle={
+                          Locale.Settings.Access.Baidu.ApiVersion.SubTitle
+                        }
+                      >
+                        <input
+                          type="text"
+                          value={accessStore.baiduApiVersion}
+                          placeholder="2023-08-01-preview"
+                          onChange={(e) =>
+                            accessStore.update(
+                              (access) =>
+                                (access.baiduApiVersion =
+                                  e.currentTarget.value),
+                            )
+                          }
+                        ></input>
+                      </ListItem>
+                    </>
+                  )}
                   {accessStore.provider === ServiceProvider.Alibaba && (
                     <>
                       <ListItem

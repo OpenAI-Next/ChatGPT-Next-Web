@@ -18,6 +18,8 @@ export const DOUBAO_BASE_URL = "https://ark.cn-beijing.volces.com/";
 
 export const QWEN_BASE_URL = "https://dashscope.aliyuncs.com/api/";
 
+export const ERNIE_BASE_URL = "https://dashscope.aliyuncs.com/api/";
+
 export enum Path {
   Home = "/",
   Chat = "/chat",
@@ -76,6 +78,7 @@ export enum ServiceProvider {
   Anthropic = "Anthropic",
   Bytedance = "Bytedance",
   Alibaba = "Alibaba",
+  Baidu = "Baidu",
 }
 
 export enum ModelProvider {
@@ -84,6 +87,7 @@ export enum ModelProvider {
   Claude = "Claude",
   Doubao = "Doubao",
   Qwen = "Qwen",
+  Ernie = "Ernie",
 }
 
 export const Anthropic = {
@@ -114,6 +118,13 @@ export const AlibabaPath = {
   ListModelPath: "v1/models",
 };
 
+export const BaiduPath = {
+  ChatPath: "rpc/2.0/ai_custom/v1/wenxinworkshop/chat",
+  UsagePath: "dashboard/billing/usage",
+  SubsPath: "dashboard/billing/subscription",
+  ListModelPath: "v1/models",
+};
+
 export const Azure = {
   ExampleEndpoint: "https://{resource-url}/openai/deployments/{deploy-id}",
 };
@@ -131,6 +142,12 @@ export const Bytedance = {
 export const Alibaba = {
   ExampleEndpoint: "https://dashscope.aliyuncs.com/",
   ChatPath: (modelName: string) => `v1beta/models/${modelName}:generateContent`,
+};
+
+export const Baidu = {
+  ExampleEndpoint: "https://aip.baidubce.com/",
+  ChatPath: (modelName: string) =>
+    `rpc/2.0/ai_custom/v1/wenxinworkshop/chat/${modelName}`,
 };
 
 export const DEFAULT_INPUT_TEMPLATE = `{{input}}`; // input / time / model / lang
@@ -203,6 +220,22 @@ const alibabaModels = [
   "qwen-max-longcontext",
 ];
 
+const baiduModels = [
+  "ERNIE-4.0-8K",
+  "ERNIE-4.0-8K-Preview",
+  "ERNIE-4.0-8K-Preview-0518",
+  "ERNIE-4.0-8K-Latest",
+  "ERNIE-4.0-8K-0329",
+  "ERNIE-4.0-8K-0104",
+  "ERNIE-4.0-8K-0613",
+  "ERNIE-3.5-8K",
+  "ERNIE-3.5-8K-0205",
+  "ERNIE-3.5-8K-Preview",
+  "ERNIE-3.5-8K-0329",
+  "ERNIE-3.5-128K",
+  "ERNIE-3.5-8K-0613",
+];
+
 const anthropicModels = [
   "claude-instant-1.2",
   "claude-2.0",
@@ -256,6 +289,15 @@ export const DEFAULT_MODELS = [
       id: "alibaba",
       providerName: "Alibaba",
       providerType: "alibaba",
+    },
+  })),
+  ...baiduModels.map((name) => ({
+    name,
+    available: true,
+    provider: {
+      id: "baidu",
+      providerName: "Baidu",
+      providerType: "baidu",
     },
   })),
 ] as const;
