@@ -41,7 +41,7 @@ function openBase64ImgUrl(base64Data: string, contentType: string) {
   window.open(blobUrl);
 }
 
-function getSdTaskStatus(item: any, progress: string) {
+function getMjTaskStatus(item: any, progress: string) {
   let s: string;
   let color: Property.Color | undefined = undefined;
   switch (item.status) {
@@ -176,7 +176,7 @@ export function Mj() {
                     <p>
                       {locales.MjPanel.AIModel}: {item?.botType}
                     </p>
-                    {getSdTaskStatus(item, item.progress)}
+                    {getMjTaskStatus(item, item.progress)}
                     <p>{item.created_at}</p>
                     <div className={chatStyles["chat-message-actions"]}>
                       <div className={chatStyles["chat-input-actions"]}>
