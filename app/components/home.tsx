@@ -140,7 +140,9 @@ function Screen() {
   const config = useAppConfig();
   const location = useLocation();
   const isHome =
-    location.pathname === Path.Home || location.pathname === Path.SdPanel;
+    location.pathname === Path.Home ||
+    location.pathname === Path.SdPanel ||
+    location.pathname === Path.MjPanel;
   const isAuth = location.pathname === Path.Auth;
   const isMobileScreen = useMobileScreen();
   const shouldTightBorder =
