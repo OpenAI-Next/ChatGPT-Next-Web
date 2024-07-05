@@ -1,9 +1,47 @@
-import { initDB, useIndexedDB } from "react-indexed-db-hook";
+import { initDB } from "react-indexed-db-hook";
 import { StoreKey } from "@/app/constant";
-import { create, StoreApi } from "zustand";
+import { create } from "zustand";
 
-export const SdDbConfig = {
-  name: "@chatgpt-next-web/sd",
+export interface MjTaskType {
+  id: number;
+  status: string;
+  botType: string;
+  prompt: string;
+  progress: string;
+  description: string;
+  params: {
+    version: string;
+    textPrompt: string;
+    no: string;
+    quality: string;
+    aspect: string;
+    style: string;
+    chaos: number;
+    stop: number;
+    stylize: number;
+    uploadImage: any[] | undefined;
+    iw: number;
+    seed: number | undefined;
+    customParam: boolean;
+    weird: number;
+    tile: boolean;
+    crefImages: any[] | undefined;
+    cw: number;
+    presetDescription?: {
+      styleDes: string;
+      viewDes: string;
+      shotDes: string;
+      lightDes: string;
+    };
+  };
+  taskId: string;
+  img_data: string;
+  error: string;
+  created_at: string;
+}
+
+export const DbConfig = {
+  name: "@chatgpt-next-web/draw",
   version: 1,
   objectStoresMeta: [
     {
@@ -27,11 +65,35 @@ export const SdDbConfig = {
         },
       ],
     },
+    {
+      store: StoreKey.MjList,
+      storeConfig: { keyPath: "id", autoIncrement: true },
+      storeSchema: [
+        { name: "status", keypath: "status", options: { unique: false } },
+        {
+          name: "description",
+          keypath: "description",
+          options: { unique: false },
+        },
+        { name: "botType", keypath: "botType", options: { unique: false } },
+        { name: "prompt", keypath: "prompt", options: { unique: false } },
+        { name: "progress", keypath: "progress", options: { unique: false } },
+        { name: "params", keypath: "params", options: { unique: false } },
+        { name: "taskId", keypath: "taskId", options: { unique: false } },
+        { name: "img_data", keypath: "img_data", options: { unique: false } },
+        { name: "error", keypath: "error", options: { unique: false } },
+        {
+          name: "created_at",
+          keypath: "created_at",
+          options: { unique: false },
+        },
+      ],
+    },
   ],
 };
 
-export function SdDbInit() {
-  initDB(SdDbConfig);
+export function DrawDbInit() {
+  initDB(DbConfig);
 }
 
 type SdStore = {

@@ -22,6 +22,8 @@ export enum Path {
   Masks = "/masks",
   Auth = "/auth",
   Sd = "/sd",
+  Mj = "/mj",
+  MjPanel = "/mj-panel",
   SdPanel = "/sd-panel",
 }
 
@@ -50,6 +52,19 @@ export enum StoreKey {
   Update = "chat-update",
   Sync = "sync",
   SdList = "sd-list",
+  MjList = "mj-list",
+}
+
+export enum MidjourneyTaskPath {
+  IMAGINE = "mj/submit/imagine",
+  BLEND = "mj/submit/blend",
+  DESCRIBE = "mj/submit/describe",
+  MODAL = "mj/submit/modal",
+  SHORTEN = "mj/submit/shorten",
+  REFRESH = "mj/task/{id}/fetch",
+  SEED = "mj/task/{id}/image-seed",
+  ACTION = "mj/submit/action",
+  CANCEL = "mj/task/{id}/cancel",
 }
 
 export const DEFAULT_SIDEBAR_WIDTH = 300;
@@ -217,4 +232,13 @@ export const internalAllowedWebDavEndpoints = [
   "https://app.koofr.net/dav/Koofr",
 ];
 
-export const PLUGINS = [{ name: "Stable Diffusion", path: Path.Sd }];
+export const PLUGINS = [
+  {
+    name: "Midjourney",
+    path: Path.Mj,
+  },
+  {
+    name: "Stable Diffusion",
+    path: Path.Sd,
+  },
+];

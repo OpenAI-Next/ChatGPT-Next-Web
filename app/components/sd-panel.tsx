@@ -3,12 +3,11 @@ import React, { useState } from "react";
 import { Select, showToast } from "@/app/components/ui-lib";
 import { IconButton } from "@/app/components/button";
 import locales from "@/app/locales";
-import { nanoid } from "nanoid";
 import { useIndexedDB } from "react-indexed-db-hook";
 import { StoreKey } from "@/app/constant";
-import { SdDbInit, sendSdTask, useSdStore } from "@/app/store/sd";
+import { DrawDbInit, sendSdTask, useSdStore } from "@/app/store/sd";
 
-SdDbInit();
+DrawDbInit();
 
 const sdCommonParams = (model: string, data: any) => {
   return [
@@ -254,7 +253,7 @@ export function ControlParam(props: {
   );
 }
 
-const getModelParamBasicData = (
+export const getModelParamBasicData = (
   columns: any[],
   data: any,
   clearText?: boolean,

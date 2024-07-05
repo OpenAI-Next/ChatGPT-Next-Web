@@ -61,6 +61,10 @@ const Sd = dynamic(async () => (await import("./sd")).Sd, {
   loading: () => <Loading noLogo />,
 });
 
+const Mj = dynamic(async () => (await import("./mj")).Mj, {
+  loading: () => <Loading noLogo />,
+});
+
 const SdPanel = dynamic(async () => (await import("./sd-panel")).SdPanel, {
   loading: () => <Loading noLogo />,
 });
@@ -169,6 +173,8 @@ function Screen() {
               <Route path={Path.Chat} element={<Chat />} />
               <Route path={Path.Sd} element={<Sd />} />
               <Route path={Path.SdPanel} element={<Sd />} />
+              <Route path={Path.Mj} element={<Mj />} />
+              <Route path={Path.MjPanel} element={<Mj />} />
               <Route path={Path.Settings} element={<Settings />} />
             </Routes>
           </div>

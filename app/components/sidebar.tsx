@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useMemo, useState } from "react";
+import React, { useEffect, useMemo, useRef, useState } from "react";
 
 import styles from "./home.module.scss";
 
@@ -7,7 +7,6 @@ import SettingsIcon from "../icons/settings.svg";
 import GithubIcon from "../icons/github.svg";
 import ChatGptIcon from "../icons/chatgpt.svg";
 import AddIcon from "../icons/add.svg";
-import CloseIcon from "../icons/close.svg";
 import DeleteIcon from "../icons/delete.svg";
 import MaskIcon from "../icons/mask.svg";
 import PluginIcon from "../icons/plugin.svg";
@@ -15,7 +14,7 @@ import DragIcon from "../icons/drag.svg";
 
 import Locale from "../locales";
 
-import { ModelType, useAppConfig, useChatStore } from "../store";
+import { useAppConfig, useChatStore } from "../store";
 
 import {
   DEFAULT_SIDEBAR_WIDTH,
@@ -30,14 +29,18 @@ import {
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { isIOS, useMobileScreen } from "../utils";
 import dynamic from "next/dynamic";
-import { Selector, showConfirm, showToast } from "./ui-lib";
-import de from "@/app/locales/de";
+import { Selector, showConfirm } from "./ui-lib";
+import { DrawDbInit } from "@/app/store/sd";
 
 const ChatList = dynamic(async () => (await import("./chat-list")).ChatList, {
   loading: () => null,
 });
 
 const SdPanel = dynamic(async () => (await import("./sd-panel")).SdPanel, {
+  loading: () => null,
+});
+
+const MjPanel = dynamic(async () => (await import("./mj-panel")).MjPanel, {
   loading: () => null,
 });
 
@@ -157,6 +160,10 @@ export function SideBar(props: { className?: string }) {
     case Path.Sd:
     case Path.SdPanel:
       bodyComponent = <SdPanel />;
+      break;
+    case Path.Mj:
+    case Path.MjPanel:
+      bodyComponent = <MjPanel />;
       break;
     default:
       isChat = true;
