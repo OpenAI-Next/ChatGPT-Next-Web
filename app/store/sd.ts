@@ -36,6 +36,14 @@ export interface MjTaskType {
   };
   taskId: string;
   img_data: string;
+  buttons: {
+    // 按钮
+    customId: string; // 自定义ID
+    emoji: string; // 表情
+    label: string; // 标签
+    style: number; // 样式
+    type: number; // 类型
+  }[];
   error: string;
   created_at: string;
 }
@@ -81,6 +89,7 @@ export const DbConfig = {
         { name: "params", keypath: "params", options: { unique: false } },
         { name: "taskId", keypath: "taskId", options: { unique: false } },
         { name: "img_data", keypath: "img_data", options: { unique: false } },
+        { name: "buttons", keypath: "buttons", options: { unique: false } },
         { name: "error", keypath: "error", options: { unique: false } },
         {
           name: "created_at",

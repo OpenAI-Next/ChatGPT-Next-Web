@@ -588,6 +588,7 @@ const en: LocaleType = {
       Name: "Status",
       Success: "Success",
       Error: "Failed",
+      LoadingError: "Loading Error",
       Wait: "Waiting",
       Running: "Running",
     },

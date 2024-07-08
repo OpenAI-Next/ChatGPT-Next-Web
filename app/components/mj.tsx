@@ -1,15 +1,11 @@
-import {
-  copyToClipboard,
-  getMessageTextContent,
-  useMobileScreen,
-} from "@/app/utils";
+import { copyToClipboard, useMobileScreen } from "@/app/utils";
 import { useNavigate } from "react-router-dom";
 import React, { useEffect, useMemo, useRef, useState } from "react";
 import { getClientConfig } from "@/app/config/client";
 import { useAppConfig } from "@/app/store";
 import { useIndexedDB } from "react-indexed-db-hook";
 import { Path, StoreKey } from "@/app/constant";
-import { fetchMjTask, useMjStore } from "@/app/store/mj";
+import { doMjTaskAction, fetchMjTask, useMjStore } from "@/app/store/mj";
 import chatStyles from "@/app/components/chat.module.scss";
 import { IconButton } from "@/app/components/button";
 import ReturnIcon from "@/app/icons/return.svg";
@@ -17,10 +13,10 @@ import Locale from "@/app/locales";
 import locales from "@/app/locales";
 import MinIcon from "@/app/icons/min.svg";
 import MaxIcon from "@/app/icons/max.svg";
-import styles from "@/app/components/sd.module.scss";
+import styles from "@/app/components/mj.module.scss";
 import ErrorIcon from "@/app/icons/delete.svg";
 import LoadingIcon from "@/app/icons/three-dots.svg";
-import { ChatAction } from "@/app/components/chat";
+import { ChatAction, TextButton } from "@/app/components/chat";
 import PromptIcon from "@/app/icons/prompt.svg";
 import CopyIcon from "@/app/icons/copy.svg";
 import ResetIcon from "@/app/icons/reload.svg";
@@ -28,18 +24,6 @@ import DeleteIcon from "@/app/icons/clear.svg";
 import { showConfirm } from "@/app/components/ui-lib";
 import { Property } from "csstype";
 import { MjTaskType } from "@/app/store/sd";
-
-function openBase64ImgUrl(base64Data: string, contentType: string) {
-  const byteCharacters = atob(base64Data);
-  const byteNumbers = new Array(byteCharacters.length);
-  for (let i = 0; i < byteCharacters.length; i++) {
-    byteNumbers[i] = byteCharacters.charCodeAt(i);
-  }
-  const byteArray = new Uint8Array(byteNumbers);
-  const blob = new Blob([byteArray], { type: contentType });
-  const blobUrl = URL.createObjectURL(blob);
-  window.open(blobUrl);
-}
 
 function getMjTaskStatus(item: any, progress: string) {
   let s: string;
@@ -54,8 +38,16 @@ function getMjTaskStatus(item: any, progress: string) {
       s = Locale.Mj.Status.Error;
       color = "red";
       break;
-    case "NOT_START":
+    case "LOADING_ERROR":
+      s = Locale.Mj.Status.LoadingError;
+      color = "orangered";
+      break;
+    case "NOT_STARTED":
       s = Locale.Mj.Status.Wait;
+      color = "gold";
+      break;
+    case "SUBMITTED":
+      s = Locale.Mj.Status.Submitted;
       color = "gold";
       break;
     case "IN_PROGRESS":
@@ -63,14 +55,14 @@ function getMjTaskStatus(item: any, progress: string) {
       color = "blue";
       break;
     default:
-      s = item.status.toUpperCase();
+      s = item.status?.toUpperCase();
   }
   return (
     <p className={styles["line-1"]} title={item.error} style={{ color: color }}>
       <span>
         {locales.Mj.Status.Name}: {s}
       </span>
-      {item.status === "error" && <span> - {item.error}</span>}
+      {item.status === "FAILURE" && <span> - {item.error}</span>}
     </p>
   );
 }
@@ -88,9 +80,9 @@ export function Mj() {
   const { execCountInc } = useMjStore();
 
   useEffect(() => {
-    mjListDb.getAll().then((data: MjTaskType[]) => {
-      setMjImages((data || []).reverse());
-    });
+    mjListDb
+      .getAll()
+      .then((data: MjTaskType[]) => setMjImages((data || []).reverse()));
   }, [execCount]);
 
   return (
@@ -132,29 +124,27 @@ export function Mj() {
         </div>
       </div>
       <div className={chatStyles["chat-body"]} ref={scrollRef}>
-        <div className={styles["sd-img-list"]}>
+        <div className={styles["mj-img-list"]}>
           {mjImages.length > 0 ? (
             mjImages.map((item) => {
               return (
                 <div
                   key={item.id}
                   style={{ display: "flex" }}
-                  className={styles["sd-img-item"]}
+                  className={styles["mj-img-item"]}
                 >
                   {item.status === "SUCCESS" ? (
                     <img
                       className={styles["img"]}
-                      // src={`data:image/png;base64,${item.img_data}`}
                       src={item.img_data}
                       alt={`${item.id}`}
-                      onClick={(e) => {
-                        window.open(item.img_data);
-                      }}
-                      // onClick={(e) => {
-                      //     openBase64ImgUrl(item.img_data, "image/png");
-                      // }}
+                      onClick={() => window.open(item.img_data)}
+                      onError={() =>
+                        mjListDb.update({ ...item, status: "LOADING_ERROR" })
+                      }
                     />
-                  ) : item.status === "FAILURE" ? (
+                  ) : item.status === "FAILURE" ||
+                    item.status === "LOADING_ERROR" ? (
                     <div className={styles["pre-img"]}>
                       <ErrorIcon />
                     </div>
@@ -165,7 +155,7 @@ export function Mj() {
                   )}
                   <div
                     style={{ marginLeft: "10px" }}
-                    className={styles["sd-img-item-info"]}
+                    className={styles["mj-img-item-info"]}
                   >
                     <p className={styles["line-1"]}>
                       {locales.MjPanel.Prompt}:{" "}
@@ -173,29 +163,19 @@ export function Mj() {
                         {item.params?.textPrompt}
                       </span>
                     </p>
-                    <p>
-                      {locales.MjPanel.AIModel}: {item?.botType}
-                    </p>
                     {getMjTaskStatus(item, item.progress)}
-                    <p>{item.created_at}</p>
+                    <p>时间: {new Date(item.created_at).toLocaleString()}</p>
                     <div className={chatStyles["chat-message-actions"]}>
                       <div className={chatStyles["chat-input-actions"]}>
                         <ChatAction
-                          text={Locale.Mj.Actions.Params}
+                          text={Locale.Mj.Actions.Buttons}
                           icon={<PromptIcon />}
                           onClick={() => console.log(1)}
                         />
                         <ChatAction
                           text={Locale.Mj.Actions.Copy}
                           icon={<CopyIcon />}
-                          onClick={() =>
-                            copyToClipboard(
-                              getMessageTextContent({
-                                role: "user",
-                                content: item.prompt ?? "",
-                              }),
-                            )
-                          }
+                          onClick={() => copyToClipboard(item.prompt ?? "")}
                         />
                         <ChatAction
                           text={Locale.Mj.Actions.Retry}
@@ -215,20 +195,36 @@ export function Mj() {
                           onClick={async () => {
                             if (await showConfirm(Locale.Mj.Danger.Delete)) {
                               mjListDb.deleteRecord(item.id).then(
-                                () => {
+                                () =>
                                   setMjImages(
-                                    mjImages.filter(
-                                      (i: any) => i.id !== item.id,
-                                    ),
-                                  );
-                                },
-                                (error) => {
-                                  console.error(error);
-                                },
+                                    mjImages.filter((i) => i.id !== item.id),
+                                  ),
+                                (error) => console.error(error),
                               );
                             }
                           }}
                         />
+                      </div>
+                      <div style={{ marginTop: "8px" }} />
+                      <div
+                        className={
+                          chatStyles["chat-input-actions-always-show-text"]
+                        }
+                      >
+                        {item.buttons?.map((opt, index: number) => (
+                          <TextButton
+                            key={index}
+                            text={opt.label || opt.emoji}
+                            onClick={async () =>
+                              await doMjTaskAction(
+                                opt.customId,
+                                item.taskId,
+                                mjListDb,
+                                execCountInc,
+                              )
+                            }
+                          />
+                        ))}
                       </div>
                     </div>
                   </div>

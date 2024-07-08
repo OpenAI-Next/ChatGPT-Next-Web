@@ -46,6 +46,41 @@ interface MidjourneySubmitTaskResponseType {
   };
 }
 
+export interface MidjourneyTask {
+  id: string;
+  createdAt: number;
+  taskID: string;
+  seed: string;
+  action:
+    | "IMAGINE"
+    | "UPSCALE"
+    | "VARIATION"
+    | "ZOOM"
+    | "PAN"
+    | "DESCRIBE"
+    | "BLEND"
+    | "SHORTEN"
+    | "SWAP_FACE"
+    | "OUTPAINT"
+    | "RICREADER_RETRY";
+  prompt: string;
+  imageUrl: string;
+  progress: string; //	任务进度
+  status:
+    | "NOT_START"
+    | "SUBMITTED"
+    | "MODAL"
+    | "IN_PROGRESS"
+    | "FAILURE"
+    | "SUCCESS"
+    | "CANCEL";
+  failReason: string;
+  buttons: MidjourneyRefreshTaskResponseType["buttons"];
+}
+
+export type MidjourneyTaskAction = MidjourneyTask["action"];
+export type MidjourneyTaskStatus = MidjourneyTask["status"];
+
 export interface MidjourneyRefreshTaskResponseType {
   action: string; // 任务类型
   buttons: {
@@ -227,7 +262,7 @@ export function sendMjTask(data: any, db: any, inc: any) {
 
   const savedData = {
     id: data.id,
-    status: "IN_PROGRESS",
+    status: "SUBMITTED",
     botType: data.params.botType,
     prompt: reqBody.prompt,
     progress: "0%",
@@ -235,7 +270,7 @@ export function sendMjTask(data: any, db: any, inc: any) {
     taskId: "",
     img_data: "",
     error: "",
-    created_at: new Date().toISOString(),
+    created_at: new Date().getTime(),
   };
 
   fetch(["https://mj.openai-next.com", MidjourneyTaskPath.IMAGINE].join("/"), {
@@ -278,14 +313,61 @@ export function sendMjTask(data: any, db: any, inc: any) {
     });
 }
 
+export async function doMjTaskAction(
+  customId: string,
+  taskId: string,
+  db: any,
+  inc: any,
+) {
+  // insert new record
+  let data: any = {
+    status: "SUBMITTED",
+    created_at: new Date().getTime(),
+  };
+  db.add(data).then((id: any) => {
+    data = { ...data, id };
+    db.update(data);
+  });
+  // fetch action
+  fetch(["https://mj.openai-next.com", MidjourneyTaskPath.ACTION].join("/"), {
+    method: "POST",
+    headers: {
+      Accept: "application/json",
+      "Content-Type": "application/json",
+      Authorization: "sk-jUDoGolSJbX7FLOUD13385De07D24f7a84C2Be6f00Dc237a",
+      "X-Requested-With": "XMLHttpRequest",
+    },
+    body: JSON.stringify({ customId, taskId }),
+  })
+    .then((response) => response.json())
+    .then((resData: MidjourneySubmitTaskResponseType) => {
+      db.update({
+        ...data,
+        status: "SUBMITTED",
+        taskId: resData.result,
+        description: resData.description,
+      });
+      inc();
+    })
+    .catch((error) => {
+      db.update({
+        ...data,
+        status: "error",
+        error: error.message,
+      });
+      console.error("Error:", error);
+      inc();
+    });
+
+  showToast("Action submitted");
+}
+
 export async function fetchMjTask(
   id: number,
   taskId: string,
   db: any,
   inc: any,
 ) {
-  debugger;
-
   const originalData = await db.getByID(id).then((data: any) => {
     return data;
   });
@@ -319,9 +401,11 @@ export async function fetchMjTask(
         img_data: resData.imageUrl,
         progress: resData.progress,
         description: resData.description,
+        buttons: resData.buttons ?? [],
+        error: resData.failReason,
       });
       inc();
-      showToast(resData.status);
+      // showToast(resData.status);
     })
     .catch((error) => {
       db.update({

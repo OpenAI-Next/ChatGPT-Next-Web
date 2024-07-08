@@ -536,8 +536,8 @@ const cn = {
     },
   },
   MjPanel: {
-    Prompt: "画面提示",
-    NegativePrompt: "否定提示",
+    Prompt: "提示",
+    NegativePrompt: "否定",
     PleaseInput: (name: string) => `请输入${name}`,
     AspectRatio: "横纵比",
     Quality: "画质",
@@ -573,6 +573,7 @@ const cn = {
     SubTitle: (count: number) => `共 ${count} 条绘画`,
     Actions: {
       Params: "查看参数",
+      Buttons: "操作",
       Copy: "复制Prompt",
       Delete: "删除",
       Retry: "刷新",
@@ -582,7 +583,9 @@ const cn = {
       Name: "状态",
       Success: "成功",
       Error: "失败",
+      LoadingError: "加载失败",
       Wait: "等待中",
+      Submitted: "已提交",
       Running: "运行中",
     },
     Danger: {

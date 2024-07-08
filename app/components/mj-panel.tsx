@@ -11,7 +11,6 @@ import { useIndexedDB } from "react-indexed-db-hook";
 import { StoreKey } from "@/app/constant";
 import { showToast } from "@/app/components/ui-lib";
 import { sendMjTask, useMjStore } from "@/app/store/mj";
-import { DrawDbInit } from "@/app/store/sd";
 
 const mjCommonParams = (model: string, data: any) => {
   return [
@@ -159,7 +158,7 @@ export function MjPanel() {
       botType: currentModel.value,
       params: { ...reqParams, botType: currentModel.value },
       img_data: "",
-      created_at: new Date().toISOString(),
+      created_at: new Date().getTime(),
     };
     mjListDb.add(data).then(
       (id) => {
