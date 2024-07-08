@@ -79,11 +79,29 @@ export function Mj() {
   const { execCount } = useMjStore();
   const { execCountInc } = useMjStore();
 
+  // 对所有非 SUCCESS/FAILURE 的任务进行轮询（即fetchMjTask）
+  async function pollMjTask() {
+    const tasks = mjImages.filter(
+      (item) => item.status !== "SUCCESS" && item.status !== "FAILURE",
+    );
+    const res = tasks.map((item) =>
+      fetchMjTask(item.id, item.taskId, mjListDb, execCountInc),
+    );
+    await Promise.all(res);
+  }
+
   useEffect(() => {
     mjListDb
       .getAll()
       .then((data: MjTaskType[]) => setMjImages((data || []).reverse()));
   }, [execCount]);
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      pollMjTask();
+    }, 2000);
+    return () => clearInterval(interval);
+  }, [mjImages]);
 
   return (
     <div className={chatStyles.chat} key={"1"}>
