@@ -574,6 +574,12 @@ const en: LocaleType = {
       PixelArt: "Pixel Art",
       TileTexture: "Tile Texture",
     },
+    Cref: "Character Reference",
+    StyleReference: "Style Reference",
+    Dimensions: "Dimensions",
+    BlendImages: "Blend Images",
+    TaskType: "Task Type",
+    botType: "Bot Type",
   },
   Mj: {
     SubTitle: (count: number) => `${count} images in total`,
@@ -582,6 +588,7 @@ const en: LocaleType = {
       Copy: "Copy Prompt",
       Delete: "Delete",
       Retry: "Refresh",
+      Buttons: "Options",
     },
     EmptyRecord: "No image records yet",
     Status: {
@@ -591,6 +598,7 @@ const en: LocaleType = {
       LoadingError: "Loading Error",
       Wait: "Waiting",
       Running: "Running",
+      Submitted: "Submitted",
     },
     Danger: {
       Delete: "Confirm deletion?",

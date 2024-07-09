@@ -283,8 +283,6 @@ async function getImagineBody(
 }
 
 export async function sendMjImagineTask(data: any, db: any, inc: any) {
-  debugger;
-
   const reqBody = await getImagineBody(data.params);
 
   const savedData = {
