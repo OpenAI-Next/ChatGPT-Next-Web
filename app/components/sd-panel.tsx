@@ -229,6 +229,24 @@ export function ControlParam(props: {
               </ControlParamItem>
             );
             break;
+          case "file":
+            element = (
+              <ControlParamItem
+                title={item.name}
+                subTitle={item.sub}
+                required={item.required}
+              >
+                <input
+                  type="file"
+                  multiple={item.multiple}
+                  accept={item.accept}
+                  onChange={(e) => {
+                    props.onChange(item.value, e.currentTarget.files);
+                  }}
+                />
+              </ControlParamItem>
+            );
+            break;
           default:
             element = (
               <ControlParamItem

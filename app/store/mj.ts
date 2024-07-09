@@ -257,13 +257,12 @@ function getImagineBody(
   return payload;
 }
 
-export function sendMjTask(data: any, db: any, inc: any) {
+export async function sendMjImagineTask(data: any, db: any, inc: any) {
   const reqBody = getImagineBody(data.params);
 
   const savedData = {
     id: data.id,
     status: "SUBMITTED",
-    botType: data.params.botType,
     prompt: reqBody.prompt,
     progress: "0%",
     params: data.params,
@@ -295,7 +294,7 @@ export function sendMjTask(data: any, db: any, inc: any) {
       } else {
         db.update({
           ...savedData,
-          status: "error",
+          status: "FAILURE",
           error: resData.description,
           description: resData.description,
         });
@@ -305,7 +304,105 @@ export function sendMjTask(data: any, db: any, inc: any) {
     .catch((error) => {
       db.update({
         ...savedData,
-        status: "error",
+        status: "FAILURE",
+        error: error.message,
+      });
+      console.error("Error:", error);
+      inc();
+    });
+}
+
+function getBase64ArrayFromFiles(fileList: FileList): Promise<string[]> {
+  const promises: Promise<string>[] = [];
+  for (let i = 0; i < fileList.length; i++) {
+    promises.push(convertFileToBase64(fileList[i]));
+  }
+  return Promise.all(promises);
+}
+
+function convertFileToBase64(file: File): Promise<string> {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => resolve(reader.result as string);
+    reader.onerror = (error) => reject(error);
+    reader.readAsDataURL(file);
+  });
+}
+
+interface MidjourneyBlendTaskParams {
+  id: string;
+  status: string;
+  params: {
+    botType: "MID_JOURNEY" | "NIJI_JOURNEY";
+    dimensions: "PORTRAIT" | "SQUARE" | "LANDSCAPE";
+    blendImages: FileList;
+  };
+  created_at: number;
+}
+
+export interface MidjourneyBlendTaskRequestPayload {
+  botType: "MID_JOURNEY" | "NIJI_JOURNEY";
+  base64Array: string[]; // base64数组，最多5张
+  dimensions: "PORTRAIT" | "SQUARE" | "LANDSCAPE"; // 图片尺寸，PORTRAIT(2:3); SQUARE(1:1); LANDSCAPE(3:2)
+}
+
+export async function sendMjBlendTask(
+  data: MidjourneyBlendTaskParams,
+  db: any,
+  inc: any,
+) {
+  const base64Array = await getBase64ArrayFromFiles(data.params.blendImages);
+
+  const reqBody: MidjourneyBlendTaskRequestPayload = {
+    botType: "MID_JOURNEY",
+    base64Array: base64Array,
+    dimensions: data.params.dimensions,
+  };
+
+  const preData = {
+    id: data.id,
+    status: "SUBMITTED",
+    progress: "0%",
+    params: data.params,
+    taskId: "",
+    img_data: "",
+    error: "",
+    created_at: new Date().getTime(),
+  };
+
+  fetch(["https://mj.openai-next.com", MidjourneyTaskPath.BLEND].join("/"), {
+    method: "POST",
+    headers: {
+      Accept: "application/json",
+      "Content-Type": "application/json",
+      Authorization: "sk-jUDoGolSJbX7FLOUD13385De07D24f7a84C2Be6f00Dc237a",
+      "X-Requested-With": "XMLHttpRequest",
+    },
+    body: JSON.stringify(reqBody),
+  })
+    .then((response) => response.json())
+    .then((resData: MidjourneySubmitTaskResponseType) => {
+      if (resData.code === 1 || resData.code === 2) {
+        db.update({
+          ...preData,
+          status: "SUBMITTED",
+          taskId: resData.result,
+          description: resData.description,
+        });
+      } else {
+        db.update({
+          ...preData,
+          status: "FAILURE",
+          error: resData.description,
+          description: resData.description,
+        });
+      }
+      inc();
+    })
+    .catch((error) => {
+      db.update({
+        ...preData,
+        status: "FAILURE",
         error: error.message,
       });
       console.error("Error:", error);
@@ -352,7 +449,7 @@ export async function doMjTaskAction(
     .catch((error) => {
       db.update({
         ...data,
-        status: "error",
+        status: "FAILURE",
         error: error.message,
       });
       console.error("Error:", error);
@@ -378,6 +475,16 @@ export async function fetchMjTask(
     return;
   }
 
+  if (!taskId || taskId === "") {
+    await db.update({
+      ...originalData,
+      status: "FAILURE",
+      error: "Task ID is empty",
+    });
+    inc();
+    return;
+  }
+
   fetch(
     [
       "https://mj.openai-next.com",
@@ -397,7 +504,7 @@ export async function fetchMjTask(
     .then((resData: MidjourneyRefreshTaskResponseType) => {
       db.update({
         ...originalData,
-        status: resData.status === "" ? "NOT_STARTED" : resData.status,
+        status: resData.status === "" ? "NOT_START" : resData.status,
         img_data: resData.imageUrl,
         progress: resData.progress,
         description: resData.description,
@@ -410,7 +517,7 @@ export async function fetchMjTask(
     .catch((error) => {
       db.update({
         ...originalData,
-        status: "error",
+        status: "FAILURE",
         error: error.message,
       });
       console.error("Error:", error);

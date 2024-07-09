@@ -10,21 +10,19 @@ import {
 import { useIndexedDB } from "react-indexed-db-hook";
 import { StoreKey } from "@/app/constant";
 import { showToast } from "@/app/components/ui-lib";
-import { sendMjTask, useMjStore } from "@/app/store/mj";
+import { sendMjBlendTask, sendMjImagineTask, useMjStore } from "@/app/store/mj";
 
-const mjCommonParams = (model: string, data: any) => {
+const mjCommonParams = (type: string, data: any) => {
   return [
     {
-      name: locales.MjPanel.ModelVersion,
-      value: "version",
+      name: locales.MjPanel.botType,
+      value: "botType",
       type: "select",
-      default: 0,
-      support: ["MID_JOURNEY"],
+      default: "MID_JOURNEY",
+      support: ["IMAGINE"],
       options: [
-        { name: "V6", value: "6" },
-        { name: "V5.2", value: "5.2" },
-        { name: "V5.1", value: "5.1" },
-        { name: "V5", value: "5" },
+        { name: "MidJourney", value: "MID_JOURNEY" },
+        { name: "Niji", value: "NIJI_JOURNEY" },
       ],
     },
     {
@@ -32,9 +30,11 @@ const mjCommonParams = (model: string, data: any) => {
       value: "version",
       type: "select",
       default: 0,
-      support: ["NIJI_JOURNEY"],
+      support: ["IMAGINE"],
       options: [
         { name: "V6", value: "6" },
+        { name: "V5.2", value: "5.2" },
+        { name: "V5.1", value: "5.1" },
         { name: "V5", value: "5" },
         { name: "V4", value: "4" },
       ],
@@ -43,6 +43,7 @@ const mjCommonParams = (model: string, data: any) => {
       name: locales.MjPanel.Prompt,
       value: "textPrompt",
       type: "textarea",
+      support: ["IMAGINE"],
       placeholder: locales.MjPanel.PleaseInput(locales.MjPanel.Prompt),
       required: true,
     },
@@ -50,6 +51,7 @@ const mjCommonParams = (model: string, data: any) => {
       name: locales.MjPanel.NegativePrompt,
       value: "no",
       type: "textarea",
+      support: ["IMAGINE"],
       placeholder: locales.MjPanel.PleaseInput(locales.MjPanel.NegativePrompt),
     },
     {
@@ -57,6 +59,7 @@ const mjCommonParams = (model: string, data: any) => {
       value: "aspect",
       type: "select",
       default: "1:1",
+      support: ["IMAGINE"],
       options: [
         { name: "1:1", value: "1:1" },
         { name: "16:9", value: "16:9" },
@@ -74,6 +77,7 @@ const mjCommonParams = (model: string, data: any) => {
       value: "quality",
       type: "select",
       default: "1",
+      support: ["IMAGINE"],
       options: [
         { name: "高清", value: "1" },
         { name: "清晰", value: ".5" },
@@ -85,6 +89,7 @@ const mjCommonParams = (model: string, data: any) => {
       value: "chaos",
       type: "number",
       default: 1,
+      support: ["IMAGINE"],
       min: 1,
       max: 100,
     },
@@ -93,6 +98,7 @@ const mjCommonParams = (model: string, data: any) => {
       value: "stylize",
       type: "number",
       default: 100,
+      support: ["IMAGINE"],
       min: 0,
       max: 1000,
     },
@@ -101,31 +107,53 @@ const mjCommonParams = (model: string, data: any) => {
       value: "seed",
       type: "number",
       default: 0,
+      support: ["IMAGINE"],
       min: 0,
       max: 4294967294,
     },
+    {
+      name: locales.MjPanel.Dimensions,
+      value: "dimensions",
+      type: "select",
+      default: "SQUARE",
+      support: ["BLEND"],
+      options: [
+        { name: "1:1", value: "SQUARE" },
+        { name: "2:3", value: "PORTRAIT" },
+        { name: "3:2", value: "LANDSCAPE" },
+      ],
+    },
+    {
+      name: locales.MjPanel.BlendImages,
+      value: "blendImages",
+      type: "file",
+      support: ["BLEND"],
+      multiple: true,
+      accept: "image/*",
+      required: true,
+    },
   ].filter((item) => {
-    return !(item.support && !item.support.includes(model));
+    return !(item.support && !item.support.includes(type));
   });
 };
 
-const models = [
+const taskTypes = [
   {
-    name: "MidJourney",
-    value: "MID_JOURNEY",
-    params: (data: any) => mjCommonParams("MID_JOURNEY", data),
+    name: "IMAGINE",
+    value: "IMAGINE",
+    params: (data: any) => mjCommonParams("IMAGINE", data),
   },
   {
-    name: "NijiJourney NIJI",
-    value: "NIJI_JOURNEY",
-    params: (data: any) => mjCommonParams("NIJI_JOURNEY", data),
+    name: "BLEND",
+    value: "BLEND",
+    params: (data: any) => mjCommonParams("BLEND", data),
   },
 ];
 
 export function MjPanel() {
-  const [currentModel, setCurrentModel] = useState(models[0]);
+  const [currentTaskType, setCurrentTaskType] = useState(taskTypes[0]);
   const [params, setParams] = useState(
-    getModelParamBasicData(currentModel.params({}), {}),
+    getModelParamBasicData(currentTaskType.params({}), {}),
   );
   const handleValueChange = (field: string, val: any) => {
     setParams((prevParams: any) => ({
@@ -133,14 +161,14 @@ export function MjPanel() {
       [field]: val,
     }));
   };
-  const handleModelChange = (model: any) => {
-    setCurrentModel(model);
+  const handleTaskTypeChange = (model: any) => {
+    setCurrentTaskType(model);
     setParams(getModelParamBasicData(model.params({}), params));
   };
   const mjListDb = useIndexedDB(StoreKey.MjList);
   const { execCountInc } = useMjStore();
   const handleSubmit = () => {
-    const columns = currentModel.params(params);
+    const columns = currentTaskType.params(params);
     const reqParams: any = {};
     for (let i = 0; i < columns.length; i++) {
       const item = columns[i];
@@ -152,20 +180,26 @@ export function MjPanel() {
         }
       }
     }
-    // console.log(JSON.stringify(reqParams, null, 4));
+
     let data: any = {
       status: "SUBMITTED",
-      botType: currentModel.value,
-      params: { ...reqParams, botType: currentModel.value },
-      img_data: "",
+      params: reqParams,
       created_at: new Date().getTime(),
     };
     mjListDb.add(data).then(
-      (id) => {
+      async (id) => {
         data = { ...data, id };
-        mjListDb.update(data);
+        mjListDb.update(data).then((r) => console.log(r));
         execCountInc();
-        sendMjTask(data, mjListDb, execCountInc);
+        switch (currentTaskType.value) {
+          case "IMAGINE":
+            await sendMjImagineTask(data, mjListDb, execCountInc);
+            break;
+          case "BLEND":
+            data.botType = "MID_JOURNEY";
+            await sendMjBlendTask(data, mjListDb, execCountInc);
+            break;
+        }
         setParams(getModelParamBasicData(columns, params, true));
       },
       (error) => {
@@ -177,23 +211,23 @@ export function MjPanel() {
 
   return (
     <>
-      <ControlParamItem title={locales.MjPanel.AIModel}>
+      <ControlParamItem title={locales.MjPanel.TaskType}>
         <div className={styles["ai-models"]}>
-          {models.map((item) => {
+          {taskTypes.map((item) => {
             return (
               <IconButton
                 text={item.name}
                 key={item.value}
-                type={currentModel.value == item.value ? "primary" : null}
+                type={currentTaskType.value == item.value ? "primary" : null}
                 shadow
-                onClick={() => handleModelChange(item)}
+                onClick={() => handleTaskTypeChange(item)}
               />
             );
           })}
         </div>
       </ControlParamItem>
       <ControlParam
-        columns={currentModel.params(params) as any[]}
+        columns={currentTaskType.params(params) as any[]}
         data={params}
         onChange={handleValueChange}
       />

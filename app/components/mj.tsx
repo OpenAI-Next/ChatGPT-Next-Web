@@ -42,7 +42,7 @@ function getMjTaskStatus(item: any, progress: string) {
       s = Locale.Mj.Status.LoadingError;
       color = "orangered";
       break;
-    case "NOT_STARTED":
+    case "NOT_START":
       s = Locale.Mj.Status.Wait;
       color = "gold";
       break;
@@ -84,9 +84,11 @@ export function Mj() {
     const tasks = mjImages.filter(
       (item) => item.status !== "SUCCESS" && item.status !== "FAILURE",
     );
+
     const res = tasks.map((item) =>
       fetchMjTask(item.id, item.taskId, mjListDb, execCountInc),
     );
+
     await Promise.all(res);
   }
 
@@ -97,10 +99,11 @@ export function Mj() {
   }, [execCount]);
 
   useEffect(() => {
-    const interval = setInterval(() => {
-      pollMjTask();
-    }, 2000);
+    const interval = setInterval(async () => {
+      await pollMjTask();
+    }, 2500);
     return () => clearInterval(interval);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [mjImages]);
 
   return (
