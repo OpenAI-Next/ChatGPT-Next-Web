@@ -540,6 +540,8 @@ const cn = {
     NegativePrompt: "否定",
     PleaseInput: (name: string) => `请输入${name}`,
     AspectRatio: "横纵比",
+    Cref: "角色参考图",
+    StyleReference: "风格参考图",
     Quality: "画质",
     Chaos: "混乱程度",
     Stylize: "风格化程度",

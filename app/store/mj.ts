@@ -1,7 +1,6 @@
 import { MidjourneyTaskPath } from "@/app/constant";
 import { create } from "zustand";
 import { showToast } from "@/app/components/ui-lib";
-import de from "@/app/locales/de";
 
 interface MidjourneyImagineTaskConfigType {
   botType: "MID_JOURNEY" | "NIJI_JOURNEY";
@@ -14,7 +13,7 @@ interface MidjourneyImagineTaskConfigType {
   chaos: number;
   stop: number;
   stylize: number;
-  uploadImage: any[] | undefined;
+  uploadImage: FileList | undefined;
   iw: number;
   seed: number | undefined;
   customParam: boolean;
@@ -81,6 +80,40 @@ export interface MidjourneyTask {
 
 export type MidjourneyTaskAction = MidjourneyTask["action"];
 export type MidjourneyTaskStatus = MidjourneyTask["status"];
+
+function getBase64ArrayFromFiles(fileList: FileList): Promise<string[]> {
+  const promises: Promise<string>[] = [];
+  for (let i = 0; i < fileList.length; i++) {
+    promises.push(convertFileToBase64(fileList[i]));
+  }
+  return Promise.all(promises);
+}
+
+function convertFileToBase64(file: File): Promise<string> {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => resolve(reader.result as string);
+    reader.onerror = (error) => reject(error);
+    reader.readAsDataURL(file);
+  });
+}
+
+interface MidjourneyBlendTaskParams {
+  id: string;
+  status: string;
+  params: {
+    botType: "MID_JOURNEY" | "NIJI_JOURNEY";
+    dimensions: "PORTRAIT" | "SQUARE" | "LANDSCAPE";
+    blendImages: FileList;
+  };
+  created_at: number;
+}
+
+export interface MidjourneyBlendTaskRequestPayload {
+  botType: "MID_JOURNEY" | "NIJI_JOURNEY";
+  base64Array: string[]; // base64数组，最多5张
+  dimensions: "PORTRAIT" | "SQUARE" | "LANDSCAPE"; // 图片尺寸，PORTRAIT(2:3); SQUARE(1:1); LANDSCAPE(3:2)
+}
 
 export interface MidjourneyRefreshTaskResponseType {
   action: string; // 任务类型
@@ -150,9 +183,9 @@ export const useMjStore = create<MjStore>()((set) => ({
   execCountInc: () => set((state) => ({ execCount: state.execCount + 1 })),
 }));
 
-function getImagineBody(
+async function getImagineBody(
   config: MidjourneyImagineTaskConfigType,
-): MidjourneyImagineTaskRequestPayload {
+): Promise<MidjourneyImagineTaskRequestPayload> {
   const needAdd = (
     configName: keyof MidjourneyImagineTaskConfigType,
     configValue: MidjourneyImagineTaskConfigType[keyof MidjourneyImagineTaskConfigType],
@@ -186,27 +219,20 @@ function getImagineBody(
   }
 
   // 1. TextPrompt
-  // 1.1 add presetDescription if not empty
-  // if (config?.presetDescription) {
-  //     (config.presetDescription?.styleDes) && (fullPrompt.TextPrompts += (config.presetDescription.styleDes + ", "));
-  //     (config.presetDescription?.viewDes) && (fullPrompt.TextPrompts += (config.presetDescription.viewDes + ", "));
-  //     (config.presetDescription?.shotDes) && (fullPrompt.TextPrompts += (config.presetDescription.shotDes + ", "));
-  //     (config.presetDescription?.lightDes) && (fullPrompt.TextPrompts += (config.presetDescription.lightDes + ", "));
-  // }
+
   // 1.2 add textPrompt
   fullPrompt.TextPrompts += config.textPrompt + ", ";
 
   // 2. base64Array
   // 2.1 uploadImage
   if (config.uploadImage && config.uploadImage.length) {
-    payload.base64Array = payload.base64Array.concat(
-      config.uploadImage.map((item) => item.thumbUrl),
-    );
+    debugger;
+    payload.base64Array = await getBase64ArrayFromFiles(config.uploadImage);
   }
+
   // 2.2 crefImages（Any regular image prompts must go before --cref.），这里不使用 base64Array，需要使用 URL
-  // if (config.crefImages && config.crefImages.length) {
-  //     payload.base64Array = payload.base64Array.concat(config.crefImages.map((item) => item.thumbUrl));
-  // }
+  // TODO
+
   // 3. Parameters
   if (!config.customParam) {
     // 对比默认配置，如果不同则添加，使用 --[key] [value] 的格式, TextPrompts --ar 1:1 --v 6 --[key] [value]
@@ -234,19 +260,17 @@ function getImagineBody(
     needAdd("seed", config.seed) &&
       (fullPrompt.Parameters += ` --seed ${config.seed}`);
     // 3.8 垫图/风格参考图的权重
-    needAdd("uploadImage", config.uploadImage) &&
-      (fullPrompt.Parameters += ` --uploadImage ${config.iw}`);
+    // needAdd("uploadImage", config.uploadImage) && (fullPrompt.Parameters += ` --uploadImage ${config.iw}`);
     // 3.9 角色参考图的权重（characterWeight）
-    needAdd("crefImages", config.crefImages) &&
-      (fullPrompt.Parameters += ` --cw ${config.cw}`);
+    // needAdd("crefImages", config.crefImages) && (fullPrompt.Parameters += ` --cw ${config.cw}`);
     // 3.10 奇异化程度（weird）,暂时没有提供作为选项
     // needAdd("weird", config.weird) && (fullPrompt.Parameters += ` --weird ${config.weird}`);
     // 3.9999 cref
-    if (config.crefImages && config.crefImages.length) {
-      fullPrompt.Parameters += ` --cref ${config.crefImages
-        .map((item) => item.url)
-        .join(" ")}`;
-    }
+    // if (config.crefImages && config.crefImages.length) {
+    //     fullPrompt.Parameters += ` --cref ${config.crefImages
+    //         .map((item) => item.url)
+    //         .join(" ")}`;
+    // }
   }
 
   payload.prompt = [
@@ -259,7 +283,9 @@ function getImagineBody(
 }
 
 export async function sendMjImagineTask(data: any, db: any, inc: any) {
-  const reqBody = getImagineBody(data.params);
+  debugger;
+
+  const reqBody = await getImagineBody(data.params);
 
   const savedData = {
     id: data.id,
@@ -311,40 +337,6 @@ export async function sendMjImagineTask(data: any, db: any, inc: any) {
       console.error("Error:", error);
       inc();
     });
-}
-
-function getBase64ArrayFromFiles(fileList: FileList): Promise<string[]> {
-  const promises: Promise<string>[] = [];
-  for (let i = 0; i < fileList.length; i++) {
-    promises.push(convertFileToBase64(fileList[i]));
-  }
-  return Promise.all(promises);
-}
-
-function convertFileToBase64(file: File): Promise<string> {
-  return new Promise((resolve, reject) => {
-    const reader = new FileReader();
-    reader.onload = () => resolve(reader.result as string);
-    reader.onerror = (error) => reject(error);
-    reader.readAsDataURL(file);
-  });
-}
-
-interface MidjourneyBlendTaskParams {
-  id: string;
-  status: string;
-  params: {
-    botType: "MID_JOURNEY" | "NIJI_JOURNEY";
-    dimensions: "PORTRAIT" | "SQUARE" | "LANDSCAPE";
-    blendImages: FileList;
-  };
-  created_at: number;
-}
-
-export interface MidjourneyBlendTaskRequestPayload {
-  botType: "MID_JOURNEY" | "NIJI_JOURNEY";
-  base64Array: string[]; // base64数组，最多5张
-  dimensions: "PORTRAIT" | "SQUARE" | "LANDSCAPE"; // 图片尺寸，PORTRAIT(2:3); SQUARE(1:1); LANDSCAPE(3:2)
 }
 
 export async function sendMjBlendTask(
@@ -503,7 +495,6 @@ export async function fetchMjTask(
   )
     .then((response) => response.json())
     .then((resData: MidjourneyRefreshTaskResponseType) => {
-      debugger;
       db.update({
         ...originalData,
         prompt: resData.prompt === "" ? resData.action : resData.prompt,

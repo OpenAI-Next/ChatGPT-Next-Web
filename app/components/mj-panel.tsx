@@ -85,6 +85,22 @@ const mjCommonParams = (type: string, data: any) => {
       ],
     },
     {
+      name: locales.MjPanel.Cref,
+      value: "crefImages",
+      type: "file",
+      support: ["IMAGINE"],
+      multiple: true,
+      accept: "image/*",
+    },
+    {
+      name: locales.MjPanel.StyleReference,
+      value: "uploadImage",
+      type: "file",
+      support: ["IMAGINE"],
+      multiple: true,
+      accept: "image/*",
+    },
+    {
       name: locales.MjPanel.Chaos,
       value: "chaos",
       type: "number",
