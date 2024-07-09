@@ -1,6 +1,7 @@
 import { MidjourneyTaskPath } from "@/app/constant";
 import { create } from "zustand";
 import { showToast } from "@/app/components/ui-lib";
+import de from "@/app/locales/de";
 
 interface MidjourneyImagineTaskConfigType {
   botType: "MID_JOURNEY" | "NIJI_JOURNEY";
@@ -380,7 +381,7 @@ export async function sendMjBlendTask(
     },
     body: JSON.stringify(reqBody),
   })
-    .then((response) => response.json())
+    .then(async (response) => await response.json())
     .then((resData: MidjourneySubmitTaskResponseType) => {
       if (resData.code === 1 || resData.code === 2) {
         db.update({
@@ -475,7 +476,7 @@ export async function fetchMjTask(
     return;
   }
 
-  if (!taskId || taskId === "") {
+  if (!taskId && new Date().getTime() - originalData.created_at > 1000 * 20) {
     await db.update({
       ...originalData,
       status: "FAILURE",
@@ -502,8 +503,10 @@ export async function fetchMjTask(
   )
     .then((response) => response.json())
     .then((resData: MidjourneyRefreshTaskResponseType) => {
+      debugger;
       db.update({
         ...originalData,
+        prompt: resData.prompt === "" ? resData.action : resData.prompt,
         status: resData.status === "" ? "NOT_START" : resData.status,
         img_data: resData.imageUrl,
         progress: resData.progress,
@@ -512,7 +515,6 @@ export async function fetchMjTask(
         error: resData.failReason,
       });
       inc();
-      // showToast(resData.status);
     })
     .catch((error) => {
       db.update({

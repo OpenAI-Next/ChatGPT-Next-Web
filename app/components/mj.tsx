@@ -180,9 +180,7 @@ export function Mj() {
                   >
                     <p className={styles["line-1"]}>
                       {locales.MjPanel.Prompt}:{" "}
-                      <span title={item.params?.textPrompt}>
-                        {item.params?.textPrompt}
-                      </span>
+                      <span title={item.prompt}>{item.prompt}</span>
                     </p>
                     {getMjTaskStatus(item, item.progress)}
                     <p>时间: {new Date(item.created_at).toLocaleString()}</p>
