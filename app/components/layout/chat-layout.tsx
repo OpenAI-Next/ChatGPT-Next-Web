@@ -1,5 +1,5 @@
 import { SideBar } from "@/app/components/sidebar";
-import styles from "@/app/components/home.module.scss";
+import styles from "@/app/components/home/home.module.scss";
 import { useLocation } from "react-router-dom";
 import { Path } from "@/app/constant";
 import { Container } from "./container";

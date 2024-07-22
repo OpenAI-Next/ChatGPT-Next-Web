@@ -1,4 +1,4 @@
-import styles from "@/app/components/home.module.scss";
+import styles from "@/app/components/home/home.module.scss";
 import { getLang } from "@/app/locales";
 import { getClientConfig } from "@/app/config/client";
 import { useAppConfig } from "@/app/store/config";

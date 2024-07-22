@@ -1,4 +1,4 @@
-import { useEffect, useRef, useMemo } from "react";
+import { useEffect, useRef, useMemo, useState } from "react";
 
 import styles from "@/app/components/home/home.module.scss";
 
@@ -24,12 +24,14 @@ import {
   NARROW_SIDEBAR_WIDTH,
   Path,
   REPO_URL,
+  PLUGINS,
 } from "@/app/constant";
 
 import { Link, useNavigate } from "react-router-dom";
 import { isIOS, useMobileScreen } from "@/app/utils";
 import dynamic from "next/dynamic";
 import { showConfirm, showToast } from "@/app/components/ui-lib";
+import { Selector } from "@/app/components/ui-lib";
 
 const ChatList = dynamic(
   async () => (await import("@/app/components/chat-list")).ChatList,
@@ -38,7 +40,7 @@ const ChatList = dynamic(
   },
 );
 
-function useHotKey() {
+export function useHotKey() {
   const chatStore = useChatStore();
 
   useEffect(() => {
@@ -57,7 +59,7 @@ function useHotKey() {
   });
 }
 
-function useDragSideBar() {
+export function useDragSideBar() {
   const limit = (x: number) => Math.min(MAX_SIDEBAR_WIDTH, x);
 
   const config = useAppConfig();
@@ -131,24 +133,21 @@ function useDragSideBar() {
   };
 }
 
-export function SideBar(props: { className?: string }) {
-  const chatStore = useChatStore();
-
-  // drag side bar
-  const { onDragStart, shouldNarrow } = useDragSideBar();
-  const navigate = useNavigate();
-  const config = useAppConfig();
+export function SideBarContainer(props: {
+  children: React.ReactNode;
+  onDragStart: (e: MouseEvent) => void;
+  shouldNarrow: boolean;
+  className?: string;
+}) {
   const isMobileScreen = useMobileScreen();
   const isIOSMobile = useMemo(
     () => isIOS() && isMobileScreen,
     [isMobileScreen],
   );
-
-  useHotKey();
-
+  const { children, className, onDragStart, shouldNarrow } = props;
   return (
     <div
-      className={`${styles.sidebar} ${props.className} ${
+      className={`${styles.sidebar} ${className} ${
         shouldNarrow && styles["narrow-sidebar"]
       }`}
       style={{
@@ -156,6 +155,25 @@ export function SideBar(props: { className?: string }) {
         transition: isMobileScreen && isIOSMobile ? "none" : undefined,
       }}
     >
+      {children}
+      <div
+        className={styles["sidebar-drag"]}
+        onPointerDown={(e) => onDragStart(e as any)}
+      >
+        <DragIcon />
+      </div>
+    </div>
+  );
+}
+
+export function SideBarHeader(props: { shouldNarrow: boolean }) {
+  const navigate = useNavigate();
+  const config = useAppConfig();
+  const { shouldNarrow } = props;
+  const [showPluginSelector, setShowPluginSelector] = useState(false);
+
+  return (
+    <>
       <div className={styles["sidebar-header"]} data-tauri-drag-region>
         <div className={styles["sidebar-title"]} data-tauri-drag-region>
           NextChat
@@ -186,13 +204,108 @@ export function SideBar(props: { className?: string }) {
           icon={<PluginIcon />}
           text={shouldNarrow ? undefined : Locale.Plugin.Name}
           className={styles["sidebar-bar-button"]}
-          onClick={() => showToast(Locale.WIP)}
+          onClick={() => setShowPluginSelector(true)}
           shadow
         />
       </div>
+      {showPluginSelector && (
+        <Selector
+          items={[
+            {
+              title: "👇 Please select the plugin you need to use",
+              value: "-",
+              disable: true,
+            },
+            ...PLUGINS.map((item) => {
+              return {
+                title: item.name,
+                value: item.path,
+              };
+            }),
+          ]}
+          onClose={() => setShowPluginSelector(false)}
+          onSelection={(s) => {
+            navigate(s[0], { state: { fromHome: true } });
+          }}
+        />
+      )}
+    </>
+  );
+}
 
-      <div
-        className={styles["sidebar-body"]}
+export function SideBarBody(props: {
+  children: React.ReactNode;
+  onClick?: (e: React.MouseEvent<HTMLDivElement, MouseEvent>) => void;
+}) {
+  const { onClick, children } = props;
+  return (
+    <div className={styles["sidebar-body"]} onClick={onClick}>
+      {children}
+    </div>
+  );
+}
+
+export function SideBarTail(props: { shouldNarrow: boolean }) {
+  const { shouldNarrow } = props;
+  const chatStore = useChatStore();
+  const navigate = useNavigate();
+  const config = useAppConfig();
+  return (
+    <div className={styles["sidebar-tail"]}>
+      <div className={styles["sidebar-actions"]}>
+        <div className={styles["sidebar-action"] + " " + styles.mobile}>
+          <IconButton
+            icon={<DeleteIcon />}
+            onClick={async () => {
+              if (await showConfirm(Locale.Home.DeleteChat)) {
+                chatStore.deleteSession(chatStore.currentSessionIndex);
+              }
+            }}
+          />
+        </div>
+        <div className={styles["sidebar-action"]}>
+          <Link to={Path.Settings}>
+            <IconButton icon={<SettingsIcon />} shadow />
+          </Link>
+        </div>
+        <div className={styles["sidebar-action"]}>
+          <a href={REPO_URL} target="_blank" rel="noopener noreferrer">
+            <IconButton icon={<GithubIcon />} shadow />
+          </a>
+        </div>
+      </div>
+      <div>
+        <IconButton
+          icon={<AddIcon />}
+          text={shouldNarrow ? undefined : Locale.Home.NewChat}
+          onClick={() => {
+            if (config.dontShowMaskSplashScreen) {
+              chatStore.newSession();
+              navigate(Path.Chat);
+            } else {
+              navigate(Path.NewChat);
+            }
+          }}
+          shadow
+        />
+      </div>
+    </div>
+  );
+}
+
+export function SideBar(props: { className?: string }) {
+  useHotKey();
+  const { onDragStart, shouldNarrow } = useDragSideBar();
+  const navigate = useNavigate();
+
+  return (
+    <SideBarContainer
+      onDragStart={onDragStart}
+      shouldNarrow={shouldNarrow}
+      {...props}
+    >
+      <SideBarHeader shouldNarrow={shouldNarrow} />
+      <SideBarBody
         onClick={(e) => {
           if (e.target === e.currentTarget) {
             navigate(Path.Home);
@@ -200,54 +313,8 @@ export function SideBar(props: { className?: string }) {
         }}
       >
         <ChatList narrow={shouldNarrow} />
-      </div>
-
-      <div className={styles["sidebar-tail"]}>
-        <div className={styles["sidebar-actions"]}>
-          <div className={styles["sidebar-action"] + " " + styles.mobile}>
-            <IconButton
-              icon={<DeleteIcon />}
-              onClick={async () => {
-                if (await showConfirm(Locale.Home.DeleteChat)) {
-                  chatStore.deleteSession(chatStore.currentSessionIndex);
-                }
-              }}
-            />
-          </div>
-          <div className={styles["sidebar-action"]}>
-            <Link to={Path.Settings}>
-              <IconButton icon={<SettingsIcon />} shadow />
-            </Link>
-          </div>
-          <div className={styles["sidebar-action"]}>
-            <a href={REPO_URL} target="_blank" rel="noopener noreferrer">
-              <IconButton icon={<GithubIcon />} shadow />
-            </a>
-          </div>
-        </div>
-        <div>
-          <IconButton
-            icon={<AddIcon />}
-            text={shouldNarrow ? undefined : Locale.Home.NewChat}
-            onClick={() => {
-              if (config.dontShowMaskSplashScreen) {
-                chatStore.newSession();
-                navigate(Path.Chat);
-              } else {
-                navigate(Path.NewChat);
-              }
-            }}
-            shadow
-          />
-        </div>
-      </div>
-
-      <div
-        className={styles["sidebar-drag"]}
-        onPointerDown={(e) => onDragStart(e as any)}
-      >
-        <DragIcon />
-      </div>
-    </div>
+      </SideBarBody>
+      <SideBarTail shouldNarrow={shouldNarrow} />
+    </SideBarContainer>
   );
 }

@@ -1,4 +1,4 @@
-import styles from "@/app/components/home.module.scss";
+import styles from "@/app/components/home/home.module.scss";
 import { SlotID } from "@/app/constant";
 
 export const Content = ({ children }: { children: React.ReactNode }) => {

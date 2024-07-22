@@ -23,7 +23,10 @@ import { AuthPage } from "@/app/components/auth/auth";
 import { getClientConfig } from "@/app/config/client";
 import { type ClientApi, getClientApi } from "@/app/client/api";
 import { useAccessStore } from "@/app/store";
-import { ChatLayout, ArtLayout } from "@/app/components/layout";
+import {
+  ChatLayout,
+  Container as LayoutContainer,
+} from "@/app/components/layout";
 
 export function Loading(props: { noLogo?: boolean }) {
   return (
@@ -172,14 +175,7 @@ function Screen() {
           </ChatLayout>
         }
       />
-      <Route
-        path={Path.Sd}
-        element={
-          <ArtLayout>
-            <Sd />
-          </ArtLayout>
-        }
-      />
+      <Route path={Path.Sd} element={<Sd />} />
       <Route
         path={Path.Settings}
         element={
