@@ -9,26 +9,21 @@ import styles from "./home.module.scss";
 import BotIcon from "../icons/bot.svg";
 import LoadingIcon from "../icons/three-dots.svg";
 
-import { getCSSVar, useMobileScreen } from "../utils";
+import { getCSSVar } from "../utils";
 
 import dynamic from "next/dynamic";
-import { Path, SlotID } from "../constant";
+import { Path } from "../constant";
 import { ErrorBoundary } from "./error";
 
-import { getISOLang, getLang } from "../locales";
+import { getISOLang } from "../locales";
 
-import {
-  HashRouter as Router,
-  Routes,
-  Route,
-  useLocation,
-} from "react-router-dom";
-import { SideBar } from "./sidebar";
+import { HashRouter as Router, Routes, Route } from "react-router-dom";
 import { useAppConfig } from "../store/config";
 import { AuthPage } from "./auth";
 import { getClientConfig } from "../config/client";
 import { type ClientApi, getClientApi } from "../client/api";
 import { useAccessStore } from "../store";
+import { ChatLayout, ArtLayout } from "@/app/components/layout";
 
 export function Loading(props: { noLogo?: boolean }) {
   return (
@@ -56,10 +51,6 @@ const MaskPage = dynamic(async () => (await import("./mask")).MaskPage, {
 });
 
 const Sd = dynamic(async () => (await import("./sd")).Sd, {
-  loading: () => <Loading noLogo />,
-});
-
-const SdPanel = dynamic(async () => (await import("./sd-panel")).SdPanel, {
   loading: () => <Loading noLogo />,
 });
 
@@ -131,48 +122,62 @@ const loadAsyncGoogleFont = () => {
 };
 
 function Screen() {
-  const config = useAppConfig();
-  const location = useLocation();
-  const isHome =
-    location.pathname === Path.Home || location.pathname === Path.SdPanel;
-  const isAuth = location.pathname === Path.Auth;
-  const isMobileScreen = useMobileScreen();
-  const shouldTightBorder =
-    getClientConfig()?.isApp || (config.tightBorder && !isMobileScreen);
-
   useEffect(() => {
     loadAsyncGoogleFont();
   }, []);
+
   return (
-    <div
-      className={
-        styles.container +
-        ` ${shouldTightBorder ? styles["tight-container"] : styles.container} ${
-          getLang() === "ar" ? styles["rtl-screen"] : ""
-        }`
-      }
-    >
-      {isAuth ? (
-        <>
-          <AuthPage />
-        </>
-      ) : (
-        <>
-          <SideBar className={isHome ? styles["sidebar-show"] : ""} />
-          <div className={styles["window-content"]} id={SlotID.AppBody}>
-            <Routes>
-              <Route path={Path.Home} element={<Chat />} />
-              <Route path={Path.NewChat} element={<NewChat />} />
-              <Route path={Path.Masks} element={<MaskPage />} />
-              <Route path={Path.Chat} element={<Chat />} />
-              <Route path={Path.Sd} element={<Sd />} />
-              <Route path={Path.SdPanel} element={<Sd />} />
-              <Route path={Path.Settings} element={<Settings />} />
-            </Routes>
-          </div>
-        </>
-      )}
-    </div>
+    <Routes>
+      <Route
+        path={Path.Home}
+        element={
+          <ChatLayout>
+            <Chat />
+          </ChatLayout>
+        }
+      />
+      <Route
+        path={Path.NewChat}
+        element={
+          <ChatLayout>
+            <NewChat />
+          </ChatLayout>
+        }
+      />
+      <Route
+        path={Path.Masks}
+        element={
+          <ChatLayout>
+            <MaskPage />
+          </ChatLayout>
+        }
+      />
+      <Route
+        path={Path.Chat}
+        element={
+          <ChatLayout>
+            <Chat />
+          </ChatLayout>
+        }
+      />
+      <Route
+        path={Path.Sd}
+        element={
+          <ArtLayout>
+            <Sd />
+          </ArtLayout>
+        }
+      />
+      <Route
+        path={Path.Settings}
+        element={
+          <ChatLayout>
+            <Settings />
+          </ChatLayout>
+        }
+      />
+      <Route path={Path.Auth} element={<AuthPage />} />
+    </Routes>
   );
 }
 
